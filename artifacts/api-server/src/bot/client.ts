@@ -5,14 +5,11 @@ import {
   type ButtonInteraction,
   type ModalSubmitInteraction,
   type ChatInputCommandInteraction,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
 } from "discord.js";
 import { logger } from "../lib/logger";
 import { handleButton, handleModalSubmit } from "./handlers";
 import { deployCommands } from "./deploy-commands";
-import { buildWelcomeEmbed } from "./embeds";
+import { buildWelcomePanel } from "./embeds";
 import { cleanupExpiredSessions } from "./session";
 import {
   BTN_OPEN_FORM,
@@ -62,12 +59,18 @@ export function createDiscordClient(): Client {
         return;
       }
 
-      if (interaction.isButton() && BUTTON_IDS.has(interaction.customId)) {
+      if (
+        interaction.isButton() &&
+        BUTTON_IDS.has(interaction.customId)
+      ) {
         await handleButton(interaction as ButtonInteraction);
         return;
       }
 
-      if (interaction.isModalSubmit() && MODAL_IDS.has(interaction.customId)) {
+      if (
+        interaction.isModalSubmit() &&
+        MODAL_IDS.has(interaction.customId)
+      ) {
         await handleModalSubmit(interaction as ModalSubmitInteraction);
         return;
       }
@@ -84,8 +87,8 @@ async function handleSlashCommand(
 ): Promise<void> {
   if (interaction.commandName !== "staff-form") return;
 
-  const { embed, row } = buildWelcomeEmbed();
-  await interaction.reply({ embeds: [embed], components: [row] });
+  const { components, flags } = buildWelcomePanel();
+  await interaction.reply({ components, flags });
 }
 
 export async function startDiscordBot(): Promise<void> {

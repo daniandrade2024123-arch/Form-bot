@@ -18,21 +18,19 @@ import {
   buildPage3Modal,
 } from "./modals";
 import {
-  buildStep1DoneEmbed,
-  buildStep2DoneEmbed,
-  buildStep3DoneEmbed,
-  buildSuccessEmbed,
-  buildErrorEmbed,
-  buildCancelledEmbed,
+  buildStep1DonePanel,
+  buildStep2DonePanel,
+  buildStep3DonePanel,
+  buildSuccessPanel,
+  buildErrorPanel,
+  buildCancelledPanel,
 } from "./embeds";
-import {
-  getSession,
-  setSession,
-  clearSession,
-} from "./session";
+import { getSession, setSession, clearSession } from "./session";
 import { sendApplicationEmail } from "./mailer";
 
-export async function handleButton(interaction: ButtonInteraction): Promise<void> {
+export async function handleButton(
+  interaction: ButtonInteraction,
+): Promise<void> {
   const { customId, user } = interaction;
 
   if (customId === BTN_OPEN_FORM) {
@@ -43,10 +41,10 @@ export async function handleButton(interaction: ButtonInteraction): Promise<void
   if (customId === BTN_PAGE2) {
     const session = getSession(user.id);
     if (!session?.page1) {
-      await interaction.reply({
-        embeds: [buildErrorEmbed("Sessão expirada ou inválida. Por favor, inicie o formulário novamente.")],
-        flags: MessageFlags.Ephemeral,
-      });
+      const { components, flags } = buildErrorPanel(
+        "Sessão expirada ou inválida. Por favor, inicie o formulário novamente.",
+      );
+      await interaction.reply({ components, flags });
       return;
     }
     await interaction.showModal(buildPage2Modal());
@@ -56,10 +54,10 @@ export async function handleButton(interaction: ButtonInteraction): Promise<void
   if (customId === BTN_PAGE3) {
     const session = getSession(user.id);
     if (!session?.page2) {
-      await interaction.reply({
-        embeds: [buildErrorEmbed("Sessão expirada ou inválida. Por favor, inicie o formulário novamente.")],
-        flags: MessageFlags.Ephemeral,
-      });
+      const { components, flags } = buildErrorPanel(
+        "Sessão expirada ou inválida. Por favor, inicie o formulário novamente.",
+      );
+      await interaction.reply({ components, flags });
       return;
     }
     await interaction.showModal(buildPage3Modal());
@@ -69,10 +67,10 @@ export async function handleButton(interaction: ButtonInteraction): Promise<void
   if (customId === BTN_SUBMIT) {
     const session = getSession(user.id);
     if (!session?.page1 || !session?.page2 || !session?.page3) {
-      await interaction.reply({
-        embeds: [buildErrorEmbed("Sessão expirada ou dados incompletos. Por favor, inicie o formulário novamente.")],
-        flags: MessageFlags.Ephemeral,
-      });
+      const { components, flags } = buildErrorPanel(
+        "Sessão expirada ou dados incompletos. Por favor, inicie o formulário novamente.",
+      );
+      await interaction.reply({ components, flags });
       return;
     }
 
@@ -94,27 +92,29 @@ export async function handleButton(interaction: ButtonInteraction): Promise<void
 
       clearSession(user.id);
 
-      await interaction.editReply({ embeds: [buildSuccessEmbed()] });
+      const { components } = buildSuccessPanel();
+      await interaction.editReply({ components });
     } catch (err) {
       logger.error({ err, userId: user.id }, "Failed to send staff application email");
-      await interaction.editReply({
-        embeds: [buildErrorEmbed("Ocorreu um erro ao enviar sua candidatura. Por favor, tente novamente mais tarde.")],
-      });
+      const { components } = buildErrorPanel(
+        "Ocorreu um erro ao enviar sua candidatura. Por favor, tente novamente mais tarde.",
+      );
+      await interaction.editReply({ components });
     }
     return;
   }
 
   if (customId === BTN_CANCEL) {
     clearSession(user.id);
-    await interaction.update({
-      embeds: [buildCancelledEmbed()],
-      components: [],
-    });
+    const { components, flags } = buildCancelledPanel();
+    await interaction.update({ components, flags });
     return;
   }
 }
 
-export async function handleModalSubmit(interaction: ModalSubmitInteraction): Promise<void> {
+export async function handleModalSubmit(
+  interaction: ModalSubmitInteraction,
+): Promise<void> {
   const { customId, user } = interaction;
 
   if (customId === MODAL_PAGE_1_ID) {
@@ -125,12 +125,8 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction): Pr
 
     setSession(user.id, { page1: { real_name, age, timezone, availability } });
 
-    const { embed, row } = buildStep1DoneEmbed();
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      flags: MessageFlags.Ephemeral,
-    });
+    const { components, flags } = buildStep1DonePanel();
+    await interaction.reply({ components, flags });
     return;
   }
 
@@ -141,27 +137,20 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction): Pr
 
     setSession(user.id, { page2: { experience, why_join, skills } });
 
-    const { embed, row } = buildStep2DoneEmbed();
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      flags: MessageFlags.Ephemeral,
-    });
+    const { components, flags } = buildStep2DonePanel();
+    await interaction.reply({ components, flags });
     return;
   }
 
   if (customId === MODAL_PAGE_3_ID) {
     const scenario = interaction.fields.getTextInputValue("scenario");
-    const additional_info = interaction.fields.getTextInputValue("additional_info") ?? "";
+    const additional_info =
+      interaction.fields.getTextInputValue("additional_info") ?? "";
 
     setSession(user.id, { page3: { scenario, additional_info } });
 
-    const { embed, row } = buildStep3DoneEmbed();
-    await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      flags: MessageFlags.Ephemeral,
-    });
+    const { components, flags } = buildStep3DonePanel();
+    await interaction.reply({ components, flags });
     return;
   }
 }
