@@ -10,10 +10,15 @@ export const MODAL_PAGE_2_ID = "staff_form_page2";
 export const MODAL_PAGE_3_ID = "staff_form_page3";
 
 export const BTN_OPEN_FORM = "btn_open_staff_form";
-export const BTN_PAGE2 = "btn_staff_page2";
-export const BTN_PAGE3 = "btn_staff_page3";
-export const BTN_SUBMIT = "btn_staff_submit";
-export const BTN_CANCEL = "btn_staff_cancel";
+export const BTN_PAGE2    = "btn_staff_page2";
+export const BTN_PAGE3    = "btn_staff_page3";
+export const BTN_SUBMIT   = "btn_staff_submit";
+export const BTN_CANCEL   = "btn_staff_cancel";
+
+export const BTN_APPROVE_PREFIX   = "btn_approve_";
+export const BTN_REJECT_PREFIX    = "btn_reject_";
+export const MODAL_APPROVE_PREFIX = "modal_approve_";
+export const MODAL_REJECT_PREFIX  = "modal_reject_";
 
 export function buildPage1Modal(): ModalBuilder {
   const modal = new ModalBuilder()
@@ -154,6 +159,83 @@ export function buildPage3Modal(): ModalBuilder {
     new ActionRowBuilder<TextInputBuilder>().addComponents(serverOrigin),
     new ActionRowBuilder<TextInputBuilder>().addComponents(scenario),
     new ActionRowBuilder<TextInputBuilder>().addComponents(additionalInfo),
+  );
+
+  return modal;
+}
+
+export function buildApproveModal(applicantId: string): ModalBuilder {
+  const modal = new ModalBuilder()
+    .setCustomId(MODAL_APPROVE_PREFIX + applicantId)
+    .setTitle("Aprovar Candidatura");
+
+  const welcomeMsg = new TextInputBuilder()
+    .setCustomId("welcome_msg")
+    .setLabel("Mensagem de boas-vindas ao novo staff")
+    .setStyle(TextInputStyle.Paragraph)
+    .setPlaceholder(
+      "Ex: Olá! Estamos muito felizes em ter você na equipe. Você vai fazer um ótimo trabalho!",
+    )
+    .setRequired(true)
+    .setMinLength(20)
+    .setMaxLength(800);
+
+  const roleInfo = new TextInputBuilder()
+    .setCustomId("role_info")
+    .setLabel("Cargo / função que receberá")
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder("Ex: Moderador Júnior")
+    .setRequired(true)
+    .setMaxLength(80);
+
+  const nextSteps = new TextInputBuilder()
+    .setCustomId("next_steps")
+    .setLabel("Próximos passos / canais de acesso")
+    .setStyle(TextInputStyle.Paragraph)
+    .setPlaceholder(
+      "Ex: Acesse o canal #staff-lounge, leia o manual de moderação e fale com um Admin...",
+    )
+    .setRequired(true)
+    .setMaxLength(600);
+
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(welcomeMsg),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(roleInfo),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(nextSteps),
+  );
+
+  return modal;
+}
+
+export function buildRejectModal(applicantId: string): ModalBuilder {
+  const modal = new ModalBuilder()
+    .setCustomId(MODAL_REJECT_PREFIX + applicantId)
+    .setTitle("Recusar Candidatura");
+
+  const reason = new TextInputBuilder()
+    .setCustomId("reject_reason")
+    .setLabel("Motivo da recusa")
+    .setStyle(TextInputStyle.Paragraph)
+    .setPlaceholder(
+      "Ex: No momento não temos vagas disponíveis para o seu perfil de experiência...",
+    )
+    .setRequired(true)
+    .setMinLength(20)
+    .setMaxLength(800);
+
+  const feedback = new TextInputBuilder()
+    .setCustomId("feedback")
+    .setLabel("Feedback construtivo (opcional)")
+    .setStyle(TextInputStyle.Paragraph)
+    .setPlaceholder(
+      "Ex: Continue desenvolvendo suas habilidades de moderação e tente novamente no futuro!",
+    )
+    .setRequired(false)
+    .setMaxLength(500);
+
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(reason),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(feedback),
   );
 
   return modal;
