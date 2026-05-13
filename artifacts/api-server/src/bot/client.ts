@@ -86,6 +86,7 @@ async function handleSlashCommand(
   interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   if (interaction.commandName !== "staff-form") return;
+  if (interaction.replied || interaction.deferred) return;
 
   const { components, flags } = buildWelcomePanel();
   await interaction.reply({ components, flags });

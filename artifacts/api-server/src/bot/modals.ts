@@ -46,7 +46,7 @@ export function buildPage1Modal(): ModalBuilder {
 
   const availability = new TextInputBuilder()
     .setCustomId("availability")
-    .setLabel("Quantas horas por semana você está disponível?")
+    .setLabel("Horas disponíveis por semana?")
     .setStyle(TextInputStyle.Short)
     .setPlaceholder("Ex: 10 horas por semana, principalmente à noite")
     .setRequired(true)
@@ -91,7 +91,7 @@ export function buildPage2Modal(): ModalBuilder {
 
   const skills = new TextInputBuilder()
     .setCustomId("skills")
-    .setLabel("Quais habilidades / qualidades você tem para a função?")
+    .setLabel("Habilidades e qualidades para a função")
     .setStyle(TextInputStyle.Paragraph)
     .setPlaceholder(
       "Ex: Comunicativo, paciente, experiente com moderação, conheço as regras do servidor...",
@@ -127,7 +127,7 @@ export function buildPage3Modal(): ModalBuilder {
 
   const additionalInfo = new TextInputBuilder()
     .setCustomId("additional_info")
-    .setLabel("Alguma informação adicional que queira compartilhar?")
+    .setLabel("Informações adicionais (opcional)")
     .setStyle(TextInputStyle.Paragraph)
     .setPlaceholder("Opcional — qualquer coisa relevante que queira acrescentar.")
     .setRequired(false)
