@@ -91,6 +91,9 @@ export async function handleButton(
         experience: session.page2.experience,
         whyJoin: session.page2.why_join,
         skills: session.page2.skills,
+        discordUser: session.page3.discord_user,
+        serverOrigin: session.page3.server_origin,
+        scenario: session.page3.scenario,
         additionalInfo: session.page3.additional_info,
       });
 
@@ -151,10 +154,12 @@ export async function handleModalSubmit(
 
   // ── Page 3 submitted ───────────────────────────────────────────────────────
   if (customId === MODAL_PAGE_3_ID) {
+    const discord_user = interaction.fields.getTextInputValue("discord_user");
+    const server_origin = interaction.fields.getTextInputValue("server_origin");
     const scenario = interaction.fields.getTextInputValue("scenario");
     const additional_info =
       interaction.fields.getTextInputValue("additional_info") ?? "";
-    setSession(user.id, { page3: { scenario, additional_info } });
+    setSession(user.id, { page3: { discord_user, server_origin, scenario, additional_info } });
 
     const { components, flags } = buildStep3DonePanel();
     await interaction.reply({ components, flags });

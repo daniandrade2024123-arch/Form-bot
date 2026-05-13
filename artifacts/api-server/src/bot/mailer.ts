@@ -19,6 +19,9 @@ export interface StaffApplication {
   whyJoin: string;
   availability: string;
   skills: string;
+  discordUser: string;
+  serverOrigin: string;
+  scenario: string;
   additionalInfo: string;
 }
 
@@ -97,6 +100,19 @@ export async function sendApplicationEmail(
       <div class="field">
         <label>Habilidades / Qualidades</label>
         <p>${escapeHtml(application.skills)}</p>
+      </div>
+      <hr class="divider" />
+      <div class="field">
+        <label>Usuário do Discord (informado)</label>
+        <p>${escapeHtml(application.discordUser)}</p>
+      </div>
+      <div class="field">
+        <label>Servidor de Origem</label>
+        <p>${escapeHtml(application.serverOrigin)}</p>
+      </div>
+      <div class="field">
+        <label>Cenário de Moderação</label>
+        <p>${escapeHtml(application.scenario)}</p>
       </div>
       <div class="field">
         <label>Informações Adicionais</label>

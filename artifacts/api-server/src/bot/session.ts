@@ -11,6 +11,8 @@ export interface FormSession {
     skills: string;
   };
   page3?: {
+    discord_user: string;
+    server_origin: string;
     scenario: string;
     additional_info: string;
   };

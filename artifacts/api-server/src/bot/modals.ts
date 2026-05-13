@@ -114,6 +114,22 @@ export function buildPage3Modal(): ModalBuilder {
     .setCustomId(MODAL_PAGE_3_ID)
     .setTitle("Candidatura à Staff — Parte 3/3");
 
+  const discordUser = new TextInputBuilder()
+    .setCustomId("discord_user")
+    .setLabel("Seu usuário do Discord (@nome)")
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder("Ex: @joao ou joao#1234")
+    .setRequired(true)
+    .setMaxLength(60);
+
+  const serverOrigin = new TextInputBuilder()
+    .setCustomId("server_origin")
+    .setLabel("De qual servidor você veio?")
+    .setStyle(TextInputStyle.Short)
+    .setPlaceholder("Ex: Servidor de Jogos BR, comunidade do Twitch...")
+    .setRequired(true)
+    .setMaxLength(120);
+
   const scenario = new TextInputBuilder()
     .setCustomId("scenario")
     .setLabel("Como você lidaria com um membro infratório?")
@@ -123,7 +139,7 @@ export function buildPage3Modal(): ModalBuilder {
     )
     .setRequired(true)
     .setMinLength(30)
-    .setMaxLength(800);
+    .setMaxLength(600);
 
   const additionalInfo = new TextInputBuilder()
     .setCustomId("additional_info")
@@ -131,9 +147,11 @@ export function buildPage3Modal(): ModalBuilder {
     .setStyle(TextInputStyle.Paragraph)
     .setPlaceholder("Opcional — qualquer coisa relevante que queira acrescentar.")
     .setRequired(false)
-    .setMaxLength(600);
+    .setMaxLength(400);
 
   modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(discordUser),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(serverOrigin),
     new ActionRowBuilder<TextInputBuilder>().addComponents(scenario),
     new ActionRowBuilder<TextInputBuilder>().addComponents(additionalInfo),
   );
