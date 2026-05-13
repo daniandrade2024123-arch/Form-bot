@@ -33,48 +33,52 @@ export async function handleButton(
 ): Promise<void> {
   const { customId, user } = interaction;
 
+  // ── Open form (show modal) ──────────────────────────────────────────────────
   if (customId === BTN_OPEN_FORM) {
     await interaction.showModal(buildPage1Modal());
     return;
   }
 
+  // ── Navigate to page 2 ─────────────────────────────────────────────────────
   if (customId === BTN_PAGE2) {
-    const session = getSession(user.id);
-    if (!session?.page1) {
-      const { components, flags } = buildErrorPanel(
-        "Sessão expirada ou inválida. Por favor, inicie o formulário novamente.",
-      );
-      await interaction.reply({ components, flags });
+    if (!getSession(user.id)?.page1) {
+      await interaction.showModal(buildPage1Modal());
       return;
     }
     await interaction.showModal(buildPage2Modal());
     return;
   }
 
+  // ── Navigate to page 3 ─────────────────────────────────────────────────────
   if (customId === BTN_PAGE3) {
-    const session = getSession(user.id);
-    if (!session?.page2) {
-      const { components, flags } = buildErrorPanel(
-        "Sessão expirada ou inválida. Por favor, inicie o formulário novamente.",
-      );
-      await interaction.reply({ components, flags });
+    if (!getSession(user.id)?.page2) {
+      await interaction.showModal(buildPage2Modal());
       return;
     }
     await interaction.showModal(buildPage3Modal());
     return;
   }
 
+  // ── Submit application ─────────────────────────────────────────────────────
   if (customId === BTN_SUBMIT) {
+    // Start the defer IMMEDIATELY — in parallel with session lookup so we
+    // use as much of the 3-second window as possible.
+    const deferPromise = interaction.deferReply({
+      flags: MessageFlags.Ephemeral,
+    });
+
+    // Sync work while the HTTP round-trip is in flight
     const session = getSession(user.id);
+
+    await deferPromise;
+
     if (!session?.page1 || !session?.page2 || !session?.page3) {
-      const { components, flags } = buildErrorPanel(
-        "Sessão expirada ou dados incompletos. Por favor, inicie o formulário novamente.",
+      const { components } = buildErrorPanel(
+        "Sessão expirada ou dados incompletos. Por favor, inicie o formulário novamente usando o botão no canal.",
       );
-      await interaction.reply({ components, flags });
+      await interaction.editReply({ components });
       return;
     }
-
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
       await sendApplicationEmail({
@@ -104,7 +108,9 @@ export async function handleButton(
     return;
   }
 
+  // ── Cancel ─────────────────────────────────────────────────────────────────
   if (customId === BTN_CANCEL) {
+    // Start the update immediately
     clearSession(user.id);
     const { components, flags } = buildCancelledPanel();
     await interaction.update({ components, flags });
@@ -117,12 +123,13 @@ export async function handleModalSubmit(
 ): Promise<void> {
   const { customId, user } = interaction;
 
+  // ── Page 1 submitted ───────────────────────────────────────────────────────
   if (customId === MODAL_PAGE_1_ID) {
+    // Parse fields (sync) then reply immediately
     const real_name = interaction.fields.getTextInputValue("real_name");
     const age = interaction.fields.getTextInputValue("age");
     const timezone = interaction.fields.getTextInputValue("timezone");
     const availability = interaction.fields.getTextInputValue("availability");
-
     setSession(user.id, { page1: { real_name, age, timezone, availability } });
 
     const { components, flags } = buildStep1DonePanel();
@@ -130,11 +137,11 @@ export async function handleModalSubmit(
     return;
   }
 
+  // ── Page 2 submitted ───────────────────────────────────────────────────────
   if (customId === MODAL_PAGE_2_ID) {
     const experience = interaction.fields.getTextInputValue("experience");
     const why_join = interaction.fields.getTextInputValue("why_join");
     const skills = interaction.fields.getTextInputValue("skills");
-
     setSession(user.id, { page2: { experience, why_join, skills } });
 
     const { components, flags } = buildStep2DonePanel();
@@ -142,11 +149,11 @@ export async function handleModalSubmit(
     return;
   }
 
+  // ── Page 3 submitted ───────────────────────────────────────────────────────
   if (customId === MODAL_PAGE_3_ID) {
     const scenario = interaction.fields.getTextInputValue("scenario");
     const additional_info =
       interaction.fields.getTextInputValue("additional_info") ?? "";
-
     setSession(user.id, { page3: { scenario, additional_info } });
 
     const { components, flags } = buildStep3DonePanel();

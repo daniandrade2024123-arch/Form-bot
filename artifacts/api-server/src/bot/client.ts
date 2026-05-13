@@ -43,10 +43,20 @@ export function createDiscordClient(): Client {
 
   client.once(Events.ClientReady, async (readyClient) => {
     logger.info({ tag: readyClient.user.tag }, "Discord bot is online");
+
     try {
       await deployCommands();
     } catch (err) {
       logger.error({ err }, "Failed to deploy slash commands");
+    }
+
+    // Pre-warm the REST connection to discord.com so the first
+    // interaction response does not pay the TLS handshake cost.
+    try {
+      await readyClient.rest.get("/gateway");
+      logger.info("REST connection pre-warmed");
+    } catch {
+      // Not critical — ignore failures
     }
 
     setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
@@ -59,10 +69,7 @@ export function createDiscordClient(): Client {
         return;
       }
 
-      if (
-        interaction.isButton() &&
-        BUTTON_IDS.has(interaction.customId)
-      ) {
+      if (interaction.isButton() && BUTTON_IDS.has(interaction.customId)) {
         await handleButton(interaction as ButtonInteraction);
         return;
       }
