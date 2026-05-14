@@ -43,6 +43,7 @@ import {
   type PendingApplication,
 } from "./applications";
 import { getDiscordClient } from "./client-singleton";
+import { getApplicationChannelId } from "./guild-config";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Button interactions
@@ -110,8 +111,9 @@ export async function handleButton(
       additionalInfo: session.page3.additional_info,
     };
 
+    const guildId = interaction.guildId ?? "";
     try {
-      await sendToApplicationChannel(application);
+      await sendToApplicationChannel(application, guildId);
       storePendingApplication(user.id, application);
       clearSession(user.id);
 
@@ -316,10 +318,16 @@ export async function handleModalSubmit(
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
-async function sendToApplicationChannel(app: PendingApplication): Promise<void> {
-  const channelId = process.env["APPLICATION_CHANNEL_ID"];
+async function sendToApplicationChannel(
+  app: PendingApplication,
+  guildId: string,
+): Promise<void> {
+  const channelId = getApplicationChannelId(guildId);
   if (!channelId) {
-    logger.warn("APPLICATION_CHANNEL_ID not set — application not posted to channel");
+    logger.warn(
+      { guildId },
+      "No application channel configured for this guild — use /staff-setup to configure one",
+    );
     return;
   }
 

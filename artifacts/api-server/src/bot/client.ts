@@ -12,6 +12,7 @@ import { deployCommands } from "./deploy-commands";
 import { buildWelcomePanel } from "./embeds";
 import { cleanupExpiredSessions } from "./session";
 import { setDiscordClient } from "./client-singleton";
+import { loadGuildConfigs, setApplicationChannel } from "./guild-config";
 import {
   BTN_OPEN_FORM,
   BTN_PAGE2,
@@ -86,6 +87,7 @@ export function createDiscordClient(): Client {
       // Not critical
     }
 
+    loadGuildConfigs();
     setInterval(cleanupExpiredSessions, 5 * 60 * 1000);
   });
 
@@ -116,11 +118,39 @@ export function createDiscordClient(): Client {
 async function handleSlashCommand(
   interaction: ChatInputCommandInteraction,
 ): Promise<void> {
-  if (interaction.commandName !== "staff-form") return;
   if (interaction.replied || interaction.deferred) return;
 
-  const { components, flags } = buildWelcomePanel();
-  await interaction.reply({ components, flags });
+  // ── /staff-form ────────────────────────────────────────────────────────────
+  if (interaction.commandName === "staff-form") {
+    const { components, flags } = buildWelcomePanel();
+    await interaction.reply({ components, flags });
+    return;
+  }
+
+  // ── /staff-setup ───────────────────────────────────────────────────────────
+  if (interaction.commandName === "staff-setup") {
+    const guildId = interaction.guildId;
+    if (!guildId) {
+      await interaction.reply({
+        content: "⚠️ Este comando só pode ser usado dentro de um servidor.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    const channel = interaction.options.getChannel("canal", true);
+    setApplicationChannel(guildId, channel.id);
+
+    logger.info({ guildId, channelId: channel.id }, "Application channel configured");
+
+    await interaction.reply({
+      content:
+        `✅ Canal de candidaturas configurado para <#${channel.id}>!\n` +
+        `-# A partir de agora todas as candidaturas deste servidor serão enviadas para este canal.`,
+      ephemeral: true,
+    });
+    return;
+  }
 }
 
 export async function startDiscordBot(): Promise<void> {
